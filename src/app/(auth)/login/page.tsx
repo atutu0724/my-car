@@ -89,7 +89,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
-            <Image src="/logo.png" alt="マイカー通勤管理" width={160} height={80} style={{ height: '80px', width: 'auto' }} priority />
+            <Image src="/salife-logo.png" alt="SALife" width={200} height={100} style={{ height: '100px', width: 'auto' }} priority />
           </div>
           <CardTitle className="sr-only">ログイン</CardTitle>
           <p className="text-sm text-gray-500 mt-1">管理者アカウントでログイン</p>
