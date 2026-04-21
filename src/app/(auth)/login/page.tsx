@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Image from 'next/image'
 import { loginWithCompanyCode } from '@/app/actions/login'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -88,8 +87,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <Image src="/salife-logo.png" alt="SALife" width={200} height={100} style={{ height: '100px', width: 'auto' }} priority />
+          <div className="flex justify-center mb-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/salife-logo.png" alt="SALife" className="h-24 w-auto" />
           </div>
           <CardTitle className="sr-only">ログイン</CardTitle>
           <p className="text-sm text-gray-500 mt-1">管理者アカウントでログイン</p>
