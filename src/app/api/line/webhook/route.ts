@@ -73,9 +73,10 @@ export async function POST(request: NextRequest) {
     if (!lineUserId) continue
 
     if (event.type === 'follow') {
+      await clearSession(supabase, lineUserId)
       await replyMessage(
         event.replyToken,
-        'マイカー通勤管理システムへようこそ！\n\nご自身の氏名をそのまま送信してください。\n例：山田 太郎\n\nシステムと連携されます。'
+        'マイカー通勤管理システムへようこそ！\n\nまず【会社コード】を送信してください。\n会社コードは管理者にご確認ください。'
       )
       continue
     }
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     const text: string = event.message.text.trim()
 
-    // 未連携 → 名前登録フロー
+    // 未連携 → 会社コード → 氏名の登録フロー
     const { data: employee } = await supabase
       .from('employees')
       .select('id, name')
@@ -98,7 +99,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!employee) {
-      await handleRegistration(supabase, lineUserId, event.replyToken, text)
+      const session = await getSession(supabase, lineUserId)
+      if (session?.step === 'await_name') {
+        await handleRegisterName(supabase, lineUserId, event.replyToken, text, session)
+      } else {
+        await handleRegisterCompanyCode(supabase, lineUserId, event.replyToken, text)
+      }
       continue
     }
 
@@ -157,16 +163,45 @@ export async function POST(request: NextRequest) {
   return new Response('OK', { status: 200 })
 }
 
-async function handleRegistration(
+async function handleRegisterCompanyCode(
   supabase: ReturnType<typeof createServiceClient>,
   lineUserId: string,
   replyToken: string,
   text: string
 ) {
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id, name')
+    .eq('code', text.trim().toLowerCase())
+    .single()
+
+  if (!company) {
+    await replyMessage(replyToken, `「${text}」に一致する会社コードが見つかりませんでした。\n正確な会社コードを送信してください。`)
+    return
+  }
+
+  await setSession(supabase, lineUserId, {
+    step: 'await_name',
+    vehicle_id: null,
+    temp_data: { company_id: company.id, company_name: company.name },
+  })
+  await replyMessage(replyToken, `【${company.name}】で確認しました。\n\n次にご自身の氏名を送信してください。\n例：山田 太郎`)
+}
+
+async function handleRegisterName(
+  supabase: ReturnType<typeof createServiceClient>,
+  lineUserId: string,
+  replyToken: string,
+  text: string,
+  session: Session
+) {
+  const companyId = session.temp_data.company_id
   const normalized = text.replace(/\s/g, '')
+
   const { data: employees } = await supabase
     .from('employees')
     .select('id, name')
+    .eq('company_id', companyId)
     .is('line_user_id', null)
 
   const matched = employees?.filter(e =>
@@ -183,6 +218,7 @@ async function handleRegistration(
   }
 
   await supabase.from('employees').update({ line_user_id: lineUserId }).eq('id', matched[0].id)
+  await clearSession(supabase, lineUserId)
   await replyMessage(
     replyToken,
     `✅ ${matched[0].name} さんとして登録完了しました！\n\n「更新」と送信すると車両情報を更新できます。`
