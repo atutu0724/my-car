@@ -1,7 +1,12 @@
+import { redirect } from 'next/navigation'
+import { getRole } from '@/lib/supabase/get-role'
 import { getNotificationSettings } from '@/app/actions/notification-settings'
 import { NotificationSettingsForm } from '@/components/settings/notification-settings-form'
 
 export default async function SettingsPage() {
+  const role = await getRole()
+  if (role !== 'admin') redirect('/dashboard')
+
   const settings = await getNotificationSettings()
 
   return (

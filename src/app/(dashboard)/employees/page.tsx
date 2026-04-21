@@ -1,5 +1,7 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCompanyId } from '@/lib/supabase/get-company-id'
+import { getRole } from '@/lib/supabase/get-role'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { EmployeeDialog } from '@/components/employees/employee-dialog'
@@ -10,6 +12,9 @@ import { ja } from 'date-fns/locale'
 import { MessageCircle } from 'lucide-react'
 
 export default async function EmployeesPage() {
+  const role = await getRole()
+  if (role !== 'admin') redirect('/dashboard')
+
   const supabase = await createClient()
   const companyId = await getCompanyId()
 
