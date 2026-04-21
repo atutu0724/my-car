@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Car, LayoutDashboard, LogOut, Menu, Users, X } from 'lucide-react'
+import { Car, LayoutDashboard, LogOut, Menu, Settings, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +25,7 @@ export function Navbar({ userEmail }: { userEmail: string }) {
     { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
     { href: '/vehicles', label: '車両管理', icon: Car },
     { href: '/employees', label: '従業員管理', icon: Users },
+    { href: '/settings', label: '設定', icon: Settings },
   ]
 
   return (
