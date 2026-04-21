@@ -39,7 +39,8 @@ export default async function VehiclesPage() {
         <VehicleDialog employees={employees ?? []} companyId={companyId} />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* PC: テーブル表示 */}
+      <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -100,6 +101,51 @@ export default async function VehiclesPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* スマホ: カード表示 */}
+      <div className="md:hidden space-y-3">
+        {vehicles && vehicles.length > 0 ? (
+          vehicles.map(vehicle => {
+            const status = STATUS_MAP[vehicle.status as keyof typeof STATUS_MAP]
+            const emp = vehicle.employee as { name: string; line_user_id: string | null } | null
+            return (
+              <div key={vehicle.id} className="bg-white rounded-lg border border-gray-200 p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-gray-900">{emp?.name ?? '-'}</p>
+                    <p className="text-sm text-gray-500">{vehicle.license_plate} · {TYPE_MAP[vehicle.vehicle_type as keyof typeof TYPE_MAP]}</p>
+                  </div>
+                  <Badge variant={status.variant}>{status.label}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
+                  <span className="text-gray-500">車検</span>
+                  <span>{formatDate(vehicle.inspection_expiry)}</span>
+                  <span className="text-gray-500">自賠責</span>
+                  <span>{formatDate(vehicle.compulsory_insurance_expiry)}</span>
+                  <span className="text-gray-500">任意保険</span>
+                  <span>{vehicle.voluntary_insurance_expiry ? formatDate(vehicle.voluntary_insurance_expiry) : <span className="text-gray-400">-</span>}</span>
+                </div>
+                <div className="flex justify-end gap-1 pt-2 border-t border-gray-100">
+                  <VehicleNotifyButton
+                    vehicleId={vehicle.id}
+                    hasLineId={!!emp?.line_user_id}
+                  />
+                  <VehicleDialog
+                    employees={employees ?? []}
+                    companyId={companyId}
+                    vehicle={vehicle}
+                  />
+                  <DeleteButton vehicleId={vehicle.id} />
+                </div>
+              </div>
+            )
+          })
+        ) : (
+          <div className="text-center text-gray-400 py-12 bg-white rounded-lg border border-gray-200">
+            車両が登録されていません
+          </div>
+        )}
       </div>
     </div>
   )

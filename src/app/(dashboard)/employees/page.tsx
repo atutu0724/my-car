@@ -19,6 +19,15 @@ export default async function EmployeesPage() {
     .eq('company_id', companyId)
     .order('created_at', { ascending: true })
 
+  function LicenseBadge({ expiry }: { expiry: string | null }) {
+    if (!expiry) return <span className="text-gray-400">-</span>
+    const days = differenceInDays(new Date(expiry), new Date())
+    const label = format(new Date(expiry), 'yyyy/MM/dd', { locale: ja })
+    if (days < 0) return <Badge variant="destructive">{label}</Badge>
+    if (days <= 30) return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{label}</Badge>
+    return <span>{label}</span>
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -26,7 +35,8 @@ export default async function EmployeesPage() {
         <EmployeeDialog />
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      {/* PC: テーブル表示 */}
+      <div className="hidden md:block bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -54,13 +64,7 @@ export default async function EmployeesPage() {
                     {(emp.vehicles as unknown as { count: number }[])?.[0]?.count ?? 0} 台
                   </TableCell>
                   <TableCell>
-                    {emp.license_expiry ? (() => {
-                      const days = differenceInDays(new Date(emp.license_expiry), new Date())
-                      const label = format(new Date(emp.license_expiry), 'yyyy/MM/dd', { locale: ja })
-                      if (days < 0) return <Badge variant="destructive">{label}</Badge>
-                      if (days <= 30) return <Badge variant="secondary" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{label}</Badge>
-                      return <span>{label}</span>
-                    })() : <span className="text-gray-400">-</span>}
+                    <LicenseBadge expiry={emp.license_expiry ?? null} />
                   </TableCell>
                   <TableCell>
                     {format(new Date(emp.created_at), 'yyyy/MM/dd', { locale: ja })}
@@ -87,6 +91,48 @@ export default async function EmployeesPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* スマホ: カード表示 */}
+      <div className="md:hidden space-y-3">
+        {employees && employees.length > 0 ? (
+          employees.map(emp => (
+            <div key={emp.id} className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <p className="font-semibold text-gray-900">{emp.name}</p>
+                  <p className="text-sm text-gray-500">
+                    登録車両: {(emp.vehicles as unknown as { count: number }[])?.[0]?.count ?? 0} 台
+                  </p>
+                </div>
+                {emp.line_user_id ? (
+                  <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">LINE連携済み</Badge>
+                ) : (
+                  <Badge variant="secondary">LINE未連携</Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
+                <span className="text-gray-500">免許更新期限</span>
+                <span><LicenseBadge expiry={emp.license_expiry ?? null} /></span>
+                <span className="text-gray-500">登録日</span>
+                <span>{format(new Date(emp.created_at), 'yyyy/MM/dd', { locale: ja })}</span>
+              </div>
+              <div className="flex justify-end gap-1 pt-2 border-t border-gray-100">
+                <LineIdDialog
+                  employeeId={emp.id}
+                  employeeName={emp.name}
+                  currentLineId={emp.line_user_id}
+                />
+                <EmployeeDialog employee={emp} />
+                <EmployeeDeleteButton employeeId={emp.id} />
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-400 py-12 bg-white rounded-lg border border-gray-200">
+            従業員が登録されていません
+          </div>
+        )}
       </div>
 
       <p className="mt-4 text-sm text-gray-500">
