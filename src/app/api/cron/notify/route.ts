@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     if (!vehicles) continue
 
-    for (const vehicle of vehicles as Vehicle[]) {
+    for (const vehicle of vehicles as unknown as Vehicle[]) {
       // 最も近い期限日を基準に判定
       const expiryDates = [
         vehicle.inspection_expiry,
