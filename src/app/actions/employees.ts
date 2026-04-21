@@ -2,15 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { getCompanyId } from '@/lib/supabase/get-company-id'
 
 export async function createEmployee(formData: FormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { data: companies } = await supabase.from('companies').select('id').limit(1)
-  const companyId = companies?.[0]?.id
-  if (!companyId) throw new Error('会社が見つかりません')
+  const companyId = await getCompanyId()
 
   const { error } = await supabase.from('employees').insert({
     company_id: companyId,

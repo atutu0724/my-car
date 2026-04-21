@@ -1,16 +1,19 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getCompanyId } from '@/lib/supabase/get-company-id'
 import { pushMessage } from '@/lib/line'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 
 export async function sendExpiryNotifications() {
   const supabase = await createClient()
+  const companyId = await getCompanyId()
 
   const { data: vehicles } = await supabase
     .from('vehicles')
     .select('*, employee:employees(name, line_user_id)')
+    .eq('company_id', companyId)
     .in('status', ['warning', 'expired'])
 
   if (!vehicles || vehicles.length === 0) return { sent: 0 }

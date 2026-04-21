@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCompanyId } from '@/lib/supabase/get-company-id'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { EmployeeDialog } from '@/components/employees/employee-dialog'
@@ -10,10 +11,12 @@ import { MessageCircle } from 'lucide-react'
 
 export default async function EmployeesPage() {
   const supabase = await createClient()
+  const companyId = await getCompanyId()
 
   const { data: employees } = await supabase
     .from('employees')
     .select('*, vehicles(count)')
+    .eq('company_id', companyId)
     .order('created_at', { ascending: true })
 
   return (

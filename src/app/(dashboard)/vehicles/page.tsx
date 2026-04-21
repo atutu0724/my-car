@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCompanyId } from '@/lib/supabase/get-company-id'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { VehicleDialog } from '@/components/vehicles/vehicle-dialog'
@@ -24,14 +25,12 @@ function formatDate(dateStr: string) {
 
 export default async function VehiclesPage() {
   const supabase = await createClient()
+  const companyId = await getCompanyId()
 
-  const [{ data: vehicles }, { data: employees }, { data: companies }] = await Promise.all([
-    supabase.from('vehicles').select('*, employee:employees(id, name, line_user_id)').order('created_at', { ascending: false }),
-    supabase.from('employees').select('*').order('name'),
-    supabase.from('companies').select('*').limit(1),
+  const [{ data: vehicles }, { data: employees }] = await Promise.all([
+    supabase.from('vehicles').select('*, employee:employees(id, name, line_user_id)').eq('company_id', companyId).order('created_at', { ascending: false }),
+    supabase.from('employees').select('*').eq('company_id', companyId).order('name'),
   ])
-
-  const companyId = companies?.[0]?.id ?? ''
 
   return (
     <div>
