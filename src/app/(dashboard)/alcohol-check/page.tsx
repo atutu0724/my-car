@@ -111,26 +111,30 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 内カメラプレビュー ----
   if (step === 'selfie-preview') {
     return (
-      <div className="max-w-sm mx-auto">
-        <h2 className="text-lg font-bold mb-1">撮影確認（本人写真）</h2>
-        <p className="text-sm text-gray-500 mb-3">撮影した写真を確認してください</p>
-        <div className="rounded-xl overflow-hidden bg-black aspect-video mb-4">
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
+        <div className="flex-1 min-h-0 flex items-center justify-center p-4" style={{ height: '80dvh' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={selfiePreview} alt="selfie" className="w-full h-full object-cover" />
+          <img src={selfiePreview} alt="selfie" className="w-full h-full object-contain rounded-xl" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={() => {
-            setStep('selfie-camera')
-            setTimeout(() => startCamera('user'), 100)
-          }}>
-            <RotateCcw className="h-4 w-4 mr-1" />撮り直し
-          </Button>
-          <Button onClick={() => {
-            setStep('device-camera')
-            setTimeout(() => startCamera('environment'), 100)
-          }}>
-            次へ（チェッカー撮影）
-          </Button>
+        <div
+          className="shrink-0 bg-black px-6 pt-3 flex flex-col gap-3"
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        >
+          <p className="text-white text-sm text-center">撮影した写真を確認してください</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => { setStep('selfie-camera'); setTimeout(() => startCamera('user'), 100) }}
+              className="flex items-center justify-center gap-2 h-14 rounded-xl border-2 border-white/30 text-white text-base font-medium active:scale-95 transition-transform"
+            >
+              <RotateCcw className="h-5 w-5" />撮り直し
+            </button>
+            <button
+              onClick={() => { setStep('device-camera'); setTimeout(() => startCamera('environment'), 100) }}
+              className="flex items-center justify-center gap-2 h-14 rounded-xl bg-blue-600 text-white text-base font-medium active:scale-95 transition-transform"
+            >
+              次へ
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -166,43 +170,51 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 外カメラプレビュー + OCR ----
   if (step === 'device-preview') {
     return (
-      <div className="max-w-sm mx-auto">
-        <h2 className="text-lg font-bold mb-1">撮影確認（チェッカー）</h2>
-        <p className="text-sm text-gray-500 mb-3">数値がはっきり写っているか確認してください</p>
-        <div className="rounded-xl overflow-hidden bg-black aspect-video mb-4">
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
+        <div className="flex-1 min-h-0 flex items-center justify-center p-4" style={{ height: '80dvh' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={devicePreview} alt="device" className="w-full h-full object-cover" />
+          <img src={devicePreview} alt="device" className="w-full h-full object-contain rounded-xl" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" onClick={() => {
-            setStep('device-camera')
-            setTimeout(() => startCamera('environment'), 100)
-          }}>
-            <RotateCcw className="h-4 w-4 mr-1" />撮り直し
-          </Button>
-          <Button disabled={loading} onClick={async () => {
-            setLoading(true)
-            setError('')
-            try {
-              const res = await fetch('/api/alcohol-check/ocr', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageBase64: deviceBase64 }),
-              })
-              const data = await res.json()
-              setConcentration(data.concentration)
-              setOcrRaw(data.raw)
-              setStep('confirm')
-            } catch {
-              setError('数値の読み取りに失敗しました')
-            } finally {
-              setLoading(false)
-            }
-          }}>
-            {loading ? '読み取り中...' : '数値を読み取る'}
-          </Button>
+        <div
+          className="shrink-0 bg-black px-6 pt-3 flex flex-col gap-3"
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        >
+          <p className="text-white text-sm text-center">数値がはっきり写っているか確認してください</p>
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => { setStep('device-camera'); setTimeout(() => startCamera('environment'), 100) }}
+              className="flex items-center justify-center gap-2 h-14 rounded-xl border-2 border-white/30 text-white text-base font-medium active:scale-95 transition-transform"
+            >
+              <RotateCcw className="h-5 w-5" />撮り直し
+            </button>
+            <button
+              disabled={loading}
+              onClick={async () => {
+                setLoading(true)
+                setError('')
+                try {
+                  const res = await fetch('/api/alcohol-check/ocr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageBase64: deviceBase64 }),
+                  })
+                  const data = await res.json()
+                  setConcentration(data.concentration)
+                  setOcrRaw(data.raw)
+                  setStep('confirm')
+                } catch {
+                  setError('数値の読み取りに失敗しました')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              className="flex items-center justify-center h-14 rounded-xl bg-blue-600 text-white text-base font-medium active:scale-95 transition-transform disabled:opacity-50"
+            >
+              {loading ? '読み取り中...' : '数値を読み取る'}
+            </button>
+          </div>
         </div>
-        {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
       </div>
     )
   }
