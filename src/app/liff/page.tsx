@@ -18,6 +18,12 @@ export default function LiffPage() {
     try {
       await window.liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID! })
 
+      if (!window.liff.isInClient()) {
+        setStatus('error')
+        setMessage('このページはLINEアプリ内からのみ開けます')
+        return
+      }
+
       if (!window.liff.isLoggedIn()) {
         window.liff.login()
         return

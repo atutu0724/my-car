@@ -18,7 +18,6 @@ function ResetPasswordConfirmForm() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const code = searchParams.get('code')
     const urlError = searchParams.get('error_description') ?? searchParams.get('error')
 
     if (urlError) {
@@ -26,26 +25,13 @@ function ResetPasswordConfirmForm() {
       return
     }
 
-    if (!code) {
-      // hash-based flow fallback
-      const hash = window.location.hash
-      if (hash.includes('type=recovery') || hash.includes('access_token')) {
-        const supabase = createClient()
-        supabase.auth.onAuthStateChange((event) => {
-          if (event === 'PASSWORD_RECOVERY') setReady(true)
-        })
-        return
-      }
-      setError('リンクが無効です。パスワードリセットをやり直してください。')
-      return
-    }
-
+    // /api/auth/callback でサーバー側のセッション交換が完了済み
     const supabase = createClient()
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        setError(`エラー: ${error.message}`)
-      } else {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
         setReady(true)
+      } else {
+        setError('セッションが見つかりません。パスワードリセットをやり直してください。')
       }
     })
   }, [searchParams])
