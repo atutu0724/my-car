@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Car, LayoutDashboard, LogOut, Menu, Settings, Users, X } from 'lucide-react'
+import { Car, LayoutDashboard, LogOut, Menu, Settings, Users, X, ClipboardList } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/lib/supabase/get-role'
@@ -13,6 +13,8 @@ import type { UserRole } from '@/lib/supabase/get-role'
 const ALL_LINKS = [
   { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard, roles: ['admin', 'employee'] },
   { href: '/vehicles', label: '車両管理', icon: Car, roles: ['admin', 'employee'] },
+  { href: '/alcohol-check', label: 'アルコールチェック', icon: ClipboardList, roles: ['employee'] },
+  { href: '/alcohol-checks', label: 'アルコール管理', icon: ClipboardList, roles: ['admin'] },
   { href: '/employees', label: '従業員管理', icon: Users, roles: ['admin'] },
   { href: '/settings', label: '設定', icon: Settings, roles: ['admin'] },
 ]
