@@ -37,8 +37,15 @@ export function Navbar({ userEmail, role }: { userEmail: string; role: UserRole 
     <header className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
             <Image src="/salife-logo.png" alt="マイカー通勤管理" width={120} height={48} style={{ height: '48px', width: 'auto' }} priority />
+            {/* スマホ: ロゴ横にロールとメール */}
+            <div className="flex flex-col md:hidden">
+              <span className="text-xs text-gray-400 border border-gray-200 rounded px-1.5 py-0.5 w-fit">
+                {role === 'admin' ? '管理者' : '従業員'}
+              </span>
+              <span className="text-xs text-gray-400 truncate max-w-[140px]">{userEmail}</span>
+            </div>
             <nav className="hidden md:flex items-center gap-1">
               {links.map(({ href, label, icon: Icon }) => (
                 <Link
@@ -68,11 +75,11 @@ export function Navbar({ userEmail, role }: { userEmail: string; role: UserRole 
           </div>
 
           <button
-            className="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
-            onClick={() => setOpen(v => !v)}
-            aria-label="メニュー"
+            className="md:hidden p-2 rounded-md text-gray-400 hover:bg-gray-100"
+            onClick={handleLogout}
+            aria-label="ログアウト"
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <LogOut className="h-5 w-5" />
           </button>
         </div>
       </div>

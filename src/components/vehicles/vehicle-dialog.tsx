@@ -61,7 +61,7 @@ export function VehicleDialog({ employees, companyId, vehicle }: Props) {
           車両を追加
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEdit ? '車両を編集' : '車両を追加'}</DialogTitle>
         </DialogHeader>
@@ -101,7 +101,7 @@ export function VehicleDialog({ employees, companyId, vehicle }: Props) {
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
               <Label htmlFor="inspection_expiry">車検有効期限</Label>
               <Input

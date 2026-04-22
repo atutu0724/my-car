@@ -38,7 +38,9 @@ export default async function AlcoholChecksPage() {
       ) : (
         <div className="space-y-4">
           {checks.map(check => {
-            const isOver = check.concentration !== null && check.concentration > 0.15
+            const isVacation = check.check_type === 'vacation'
+            const isOver = !isVacation && check.concentration !== null && check.concentration > 0.15
+
             return (
               <div key={check.id} className="bg-white rounded-xl border border-gray-200 p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -51,39 +53,50 @@ export default async function AlcoholChecksPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={check.check_type === 'before' ? 'default' : 'secondary'}>
-                      {check.check_type === 'before' ? '乗車前' : '乗車後'}
-                    </Badge>
-                    <span className={`text-lg font-bold ${isOver ? 'text-red-600' : 'text-green-600'}`}>
-                      {check.concentration !== null ? `${Number(check.concentration).toFixed(3)} mg/L` : '-'}
-                    </span>
-                    {isOver && <Badge variant="destructive">要確認</Badge>}
+                    {isVacation ? (
+                      <Badge className="bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-100">
+                        休暇
+                      </Badge>
+                    ) : (
+                      <>
+                        <Badge variant={check.check_type === 'before' ? 'default' : 'secondary'}>
+                          {check.check_type === 'before' ? '乗車前' : '乗車後'}
+                        </Badge>
+                        <span className={`text-lg font-bold ${isOver ? 'text-red-600' : 'text-green-600'}`}>
+                          {check.concentration !== null ? `${Number(check.concentration).toFixed(3)} mg/L` : '-'}
+                        </span>
+                        {isOver && <Badge variant="destructive">要確認</Badge>}
+                      </>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {check.selfie_url && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">本人写真</p>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={check.selfie_url}
-                        alt="selfie"
-                        className="rounded-lg w-full aspect-video object-cover border border-gray-100"
-                      />
-                    </div>
-                  )}
-                  {check.device_photo_url && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">チェッカー</p>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={check.device_photo_url}
-                        alt="device"
-                        className="rounded-lg w-full aspect-video object-cover border border-gray-100"
-                      />
-                    </div>
-                  )}
-                </div>
+
+                {!isVacation && (
+                  <div className="grid grid-cols-2 gap-3">
+                    {check.selfie_url && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">本人写真</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={check.selfie_url}
+                          alt="selfie"
+                          className="rounded-lg w-full aspect-video object-cover border border-gray-100"
+                        />
+                      </div>
+                    )}
+                    {check.device_photo_url && (
+                      <div>
+                        <p className="text-xs text-gray-400 mb-1">チェッカー</p>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={check.device_photo_url}
+                          alt="device"
+                          className="rounded-lg w-full aspect-video object-cover border border-gray-100"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}

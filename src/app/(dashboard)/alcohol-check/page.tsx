@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef, useState, useCallback } from 'react'
-import { Camera, RotateCcw, Send, CheckCircle, Pencil } from 'lucide-react'
+import { useRef, useState, useCallback, useEffect } from 'react'
+import { Camera, RotateCcw, Send, CheckCircle, Pencil, CalendarOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 type CheckType = 'before' | 'after'
-type Step = 'select' | 'selfie-camera' | 'selfie-preview' | 'device-camera' | 'device-preview' | 'confirm' | 'done'
+type Step = 'select' | 'selfie-camera' | 'selfie-preview' | 'device-camera' | 'device-preview' | 'confirm' | 'done' | 'done-vacation'
 
 const SAFE_BOTTOM = 'max(1.5rem, env(safe-area-inset-bottom))'
 
@@ -19,11 +19,19 @@ export default function AlcoholCheckPage() {
   const [concentration, setConcentration] = useState('0.00')
   const [isEditingConc, setIsEditingConc] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showVacationConfirm, setShowVacationConfirm] = useState(false)
+  const [vacationDate, setVacationDate] = useState(() => new Date().toLocaleDateString('sv-SE'))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [now, setNow] = useState(new Date())
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop())
@@ -55,16 +63,39 @@ export default function AlcoholCheckPage() {
     setConcentration('0.00')
     setIsEditingConc(false)
     setShowConfirm(false)
+    setShowVacationConfirm(false)
+    setVacationDate(new Date().toLocaleDateString('sv-SE'))
     setError('')
   }, [])
+
+  const todayStr = now.toLocaleDateString('sv-SE')
+  const maxDateStr = (() => {
+    const d = new Date(now)
+    d.setMonth(d.getMonth() + 3)
+    return d.toLocaleDateString('sv-SE')
+  })()
+
+  const dateDisplay = now.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
+  const timeDisplay = now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+
+  function formatVacationDate(dateStr: string) {
+    const d = new Date(`${dateStr}T00:00:00`)
+    return d.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })
+  }
 
   // ---- 種別選択 ----
   if (step === 'select') {
     return (
       <div className="max-w-sm mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">アルコールチェック</h1>
-        <p className="text-sm text-gray-500 mb-8">乗車前・乗車後を選択してください</p>
-        <div className="grid grid-cols-2 gap-4">
+        {/* 日付・時刻 */}
+        <div className="text-center mb-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+          <p className="text-sm text-gray-500 mb-1">{dateDisplay}</p>
+          <p className="text-4xl font-mono font-bold text-gray-900 tabular-nums">{timeDisplay}</p>
+        </div>
+
+        <h1 className="text-xl font-bold text-gray-900 mb-1">アルコールチェック</h1>
+        <p className="text-sm text-gray-500 mb-4">乗車前・乗車後を選択してください</p>
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {(['before', 'after'] as const).map(t => (
             <button key={t}
               onClick={() => { setCheckType(t); setStep('selfie-camera'); setTimeout(() => startCamera('user'), 100) }}
@@ -75,6 +106,64 @@ export default function AlcoholCheckPage() {
             </button>
           ))}
         </div>
+
+        <div className="border-t border-gray-200 pt-4">
+          <button
+            onClick={() => setShowVacationConfirm(true)}
+            className="w-full flex items-center justify-center gap-2 h-12 rounded-xl border-2 border-orange-200 bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium transition-colors"
+          >
+            <CalendarOff className="h-5 w-5" />
+            本日を休暇日として登録
+          </button>
+        </div>
+
+        {/* 休暇確認ダイアログ */}
+        {showVacationConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4" style={{ paddingBottom: SAFE_BOTTOM }}>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+              <h3 className="font-bold text-lg mb-4 text-center">休暇日の登録</h3>
+              <div className="mb-5">
+                <label className="block text-sm text-gray-500 mb-1.5">休暇日を選択</label>
+                <input
+                  type="date"
+                  value={vacationDate}
+                  min={todayStr}
+                  max={maxDateStr}
+                  onChange={e => setVacationDate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+                {vacationDate && (
+                  <p className="text-xs text-gray-400 mt-1.5 text-center">{formatVacationDate(vacationDate)}</p>
+                )}
+              </div>
+              <p className="text-gray-500 text-sm text-center mb-4">
+                アルコールチェックは不要になります。
+              </p>
+              {error && <p className="text-sm text-red-500 text-center mb-3">{error}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => { setShowVacationConfirm(false); setError('') }} disabled={loading}
+                  className="h-13 rounded-xl border-2 border-gray-300 text-gray-700 font-medium active:scale-95 transition-transform disabled:opacity-50 py-3">
+                  キャンセル
+                </button>
+                <button disabled={loading || !vacationDate} onClick={async () => {
+                  setLoading(true); setError('')
+                  try {
+                    const res = await fetch('/api/alcohol-check/vacation', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ date: vacationDate }),
+                    })
+                    if (!res.ok) { const d = await res.json(); setError(d.error ?? '登録に失敗しました'); return }
+                    setShowVacationConfirm(false); setStep('done-vacation')
+                  } catch { setError('登録に失敗しました') }
+                  finally { setLoading(false) }
+                }} className="h-13 rounded-xl bg-orange-500 text-white font-medium active:scale-95 transition-transform disabled:opacity-50 py-3">
+                  {loading ? '登録中...' : '休暇日として登録'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -290,6 +379,19 @@ export default function AlcoholCheckPage() {
         <h2 className="text-xl font-bold mb-2">送信完了</h2>
         <p className="text-gray-500 text-sm mb-6">アルコールチェック結果を送信しました</p>
         <Button onClick={reset}>もう一度チェックする</Button>
+      </div>
+    )
+  }
+
+  // ---- 休暇登録完了 ----
+  if (step === 'done-vacation') {
+    return (
+      <div className="max-w-sm mx-auto text-center py-12">
+        <CalendarOff className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold mb-2">休暇日として登録しました</h2>
+        <p className="text-gray-500 text-sm mb-1">{formatVacationDate(vacationDate)}</p>
+        <p className="text-gray-400 text-xs mb-6">アルコールチェックは不要です</p>
+        <Button variant="outline" onClick={reset}>戻る</Button>
       </div>
     )
   }

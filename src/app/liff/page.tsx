@@ -63,7 +63,7 @@ export default function LiffPage() {
         return
       }
 
-      window.location.href = '/vehicles'
+      window.location.href = '/alcohol-check'
     } catch {
       setStatus('error')
       setMessage('エラーが発生しました。再度お試しください。')

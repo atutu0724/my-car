@@ -1,10 +1,13 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, AlertTriangle, XCircle, Car } from 'lucide-react'
 import { NotifyButton } from '@/components/dashboard/notify-button'
+import { getRole } from '@/lib/supabase/get-role'
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  const [supabase, role] = await Promise.all([createClient(), getRole()])
+  if (role === 'employee') redirect('/alcohol-check')
   const { data: rpcStats } = await supabase.rpc('get_vehicle_stats')
 
   const rows = (rpcStats ?? []) as { status: string; cnt: number }[]
@@ -48,7 +51,7 @@ export default async function DashboardPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">ダッシュボード</h1>
-        <NotifyButton />
+        {role === 'admin' && <NotifyButton />}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(({ label, value, icon: Icon, color, bg }) => (
