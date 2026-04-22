@@ -84,22 +84,23 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 内カメラ（セルフィー）----
   if (step === 'selfie-camera') {
     return (
-      <div className="max-w-sm mx-auto">
-        <h2 className="text-lg font-bold mb-1">{checkType === 'before' ? '乗車前' : '乗車後'}チェック</h2>
-        <p className="text-sm text-gray-500 mb-3">アルコールチェッカーに息を吹いている様子を撮影してください（内カメラ）</p>
-        <div className="relative rounded-xl overflow-hidden bg-black aspect-video mb-4">
-          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+      <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover" />
+        <div className="bg-black/80 px-6 py-6 flex flex-col items-center gap-4">
+          <p className="text-white text-sm text-center">アルコールチェッカーに息を吹いている様子を撮影してください</p>
+          <button
+            onClick={() => {
+              const dataUrl = capturePhoto()
+              setSelfiePreview(dataUrl)
+              setSelfieBase64(dataUrl.split(',')[1])
+              stopCamera()
+              setStep('selfie-preview')
+            }}
+            className="w-16 h-16 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
+          >
+            <Camera className="h-7 w-7 text-gray-800" />
+          </button>
         </div>
-        <Button className="w-full" onClick={() => {
-          const dataUrl = capturePhoto()
-          const base64 = dataUrl.split(',')[1]
-          setSelfiePreview(dataUrl)
-          setSelfieBase64(base64)
-          stopCamera()
-          setStep('selfie-preview')
-        }}>
-          <Camera className="h-4 w-4 mr-2" />撮影
-        </Button>
       </div>
     )
   }
@@ -135,22 +136,23 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 外カメラ（チェッカー）----
   if (step === 'device-camera') {
     return (
-      <div className="max-w-sm mx-auto">
-        <h2 className="text-lg font-bold mb-1">チェッカー結果を撮影</h2>
-        <p className="text-sm text-gray-500 mb-3">アルコールチェッカーの数値表示を撮影してください（外カメラ）</p>
-        <div className="relative rounded-xl overflow-hidden bg-black aspect-video mb-4">
-          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+      <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover" />
+        <div className="bg-black/80 px-6 py-6 flex flex-col items-center gap-4">
+          <p className="text-white text-sm text-center">アルコールチェッカーの数値表示を撮影してください</p>
+          <button
+            onClick={() => {
+              const dataUrl = capturePhoto()
+              setDevicePreview(dataUrl)
+              setDeviceBase64(dataUrl.split(',')[1])
+              stopCamera()
+              setStep('device-preview')
+            }}
+            className="w-16 h-16 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
+          >
+            <Camera className="h-7 w-7 text-gray-800" />
+          </button>
         </div>
-        <Button className="w-full" onClick={async () => {
-          const dataUrl = capturePhoto()
-          const base64 = dataUrl.split(',')[1]
-          setDevicePreview(dataUrl)
-          setDeviceBase64(base64)
-          stopCamera()
-          setStep('device-preview')
-        }}>
-          <Camera className="h-4 w-4 mr-2" />撮影
-        </Button>
       </div>
     )
   }
