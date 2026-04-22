@@ -84,9 +84,12 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 内カメラ（セルフィー）----
   if (step === 'selfie-camera') {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col">
-        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover" />
-        <div className="bg-black/80 px-6 py-6 flex flex-col items-center gap-4">
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
+        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover min-h-0" />
+        <div
+          className="shrink-0 bg-black px-6 pt-4 flex flex-col items-center gap-3"
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        >
           <p className="text-white text-sm text-center">アルコールチェッカーに息を吹いている様子を撮影してください</p>
           <button
             onClick={() => {
@@ -96,9 +99,9 @@ export default function AlcoholCheckPage() {
               stopCamera()
               setStep('selfie-preview')
             }}
-            className="w-16 h-16 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
+            className="w-20 h-20 rounded-full bg-white border-4 border-gray-400 flex items-center justify-center active:scale-95 transition-transform"
           >
-            <Camera className="h-7 w-7 text-gray-800" />
+            <Camera className="h-8 w-8 text-gray-800" />
           </button>
         </div>
       </div>
@@ -136,9 +139,12 @@ export default function AlcoholCheckPage() {
   // ---- STEP: 外カメラ（チェッカー）----
   if (step === 'device-camera') {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col">
-        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover" />
-        <div className="bg-black/80 px-6 py-6 flex flex-col items-center gap-4">
+      <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
+        <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover min-h-0" />
+        <div
+          className="shrink-0 bg-black px-6 pt-4 flex flex-col items-center gap-3"
+          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        >
           <p className="text-white text-sm text-center">アルコールチェッカーの数値表示を撮影してください</p>
           <button
             onClick={() => {
@@ -148,9 +154,9 @@ export default function AlcoholCheckPage() {
               stopCamera()
               setStep('device-preview')
             }}
-            className="w-16 h-16 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center"
+            className="w-20 h-20 rounded-full bg-white border-4 border-gray-400 flex items-center justify-center active:scale-95 transition-transform"
           >
-            <Camera className="h-7 w-7 text-gray-800" />
+            <Camera className="h-8 w-8 text-gray-800" />
           </button>
         </div>
       </div>
