@@ -19,14 +19,31 @@ function ResetPasswordConfirmForm() {
 
   useEffect(() => {
     const code = searchParams.get('code')
+    const urlError = searchParams.get('error_description') ?? searchParams.get('error')
+
+    if (urlError) {
+      setError(`エラー: ${urlError}`)
+      return
+    }
+
     if (!code) {
+      // hash-based flow fallback
+      const hash = window.location.hash
+      if (hash.includes('type=recovery') || hash.includes('access_token')) {
+        const supabase = createClient()
+        supabase.auth.onAuthStateChange((event) => {
+          if (event === 'PASSWORD_RECOVERY') setReady(true)
+        })
+        return
+      }
       setError('リンクが無効です。パスワードリセットをやり直してください。')
       return
     }
+
     const supabase = createClient()
     supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
       if (error) {
-        setError('リンクの有効期限が切れています。パスワードリセットをやり直してください。')
+        setError(`エラー: ${error.message}`)
       } else {
         setReady(true)
       }
