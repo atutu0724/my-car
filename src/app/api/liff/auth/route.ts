@@ -74,17 +74,16 @@ export async function POST(request: NextRequest) {
       .eq('id', employee.id)
   }
 
-  // Generate magic link
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+  // Generate token for client-side session creation (avoid external redirect)
+  const email = `${lineUserId}@liff.internal`
   const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
     type: 'magiclink',
-    email: `${lineUserId}@liff.internal`,
-    options: { redirectTo: `${baseUrl}/vehicles` },
+    email,
   })
 
-  if (linkError || !linkData?.properties?.action_link) {
-    return NextResponse.json({ error: 'ログインリンクの生成に失敗しました' }, { status: 500 })
+  if (linkError || !linkData?.properties?.hashed_token) {
+    return NextResponse.json({ error: 'ログイントークンの生成に失敗しました' }, { status: 500 })
   }
 
-  return NextResponse.json({ actionLink: linkData.properties.action_link })
+  return NextResponse.json({ email, hashedToken: linkData.properties.hashed_token })
 }

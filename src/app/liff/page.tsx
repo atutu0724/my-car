@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Script from 'next/script'
+import { createClient } from '@/lib/supabase/client'
 
 declare global {
   interface Window {
@@ -49,7 +50,20 @@ export default function LiffPage() {
         return
       }
 
-      window.location.href = data.actionLink
+      // セッションをLINE内ブラウザで直接作成（外部ドメインへの遷移なし）
+      const supabase = createClient()
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: data.email,
+        token: data.hashedToken,
+        type: 'magiclink',
+      })
+      if (verifyError) {
+        setStatus('error')
+        setMessage('認証に失敗しました。再度お試しください。')
+        return
+      }
+
+      window.location.href = '/vehicles'
     } catch {
       setStatus('error')
       setMessage('エラーが発生しました。再度お試しください。')
