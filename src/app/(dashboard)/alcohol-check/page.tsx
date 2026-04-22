@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useCallback, useEffect } from 'react'
-import { Camera, RotateCcw, Send, CheckCircle, Pencil, CalendarOff } from 'lucide-react'
+import { Camera, RotateCcw, Send, CheckCircle, Pencil, CalendarOff, Zap, ZapOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 type CheckType = 'before' | 'after'
@@ -21,6 +21,7 @@ export default function AlcoholCheckPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [showVacationConfirm, setShowVacationConfirm] = useState(false)
   const [vacationDate, setVacationDate] = useState(() => new Date().toLocaleDateString('sv-SE'))
+  const [torchEnabled, setTorchEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [now, setNow] = useState(new Date())
@@ -40,12 +41,25 @@ export default function AlcoholCheckPage() {
 
   const startCamera = useCallback(async (facing: 'user' | 'environment') => {
     stopCamera()
+    setTorchEnabled(false)
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
     })
     streamRef.current = stream
     if (videoRef.current) videoRef.current.srcObject = stream
   }, [stopCamera])
+
+  const toggleTorch = useCallback(async () => {
+    const track = streamRef.current?.getVideoTracks()[0]
+    if (!track) return
+    const next = !torchEnabled
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] })
+      setTorchEnabled(next)
+    } catch {
+      // torch not supported on this device/camera
+    }
+  }, [torchEnabled])
 
   const capturePhoto = useCallback((): string => {
     const video = videoRef.current!
@@ -65,6 +79,7 @@ export default function AlcoholCheckPage() {
     setShowConfirm(false)
     setShowVacationConfirm(false)
     setVacationDate(new Date().toLocaleDateString('sv-SE'))
+    setTorchEnabled(false)
     setError('')
   }, [])
 
@@ -174,7 +189,13 @@ export default function AlcoholCheckPage() {
       <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
         <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover min-h-0" />
         <div className="shrink-0 bg-black px-6 pt-4 flex flex-col items-center gap-3" style={{ paddingBottom: SAFE_BOTTOM }}>
-          <p className="text-white text-sm text-center">アルコールチェッカーに息を吹いている様子を撮影してください</p>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-white text-sm flex-1 text-center">アルコールチェッカーに息を吹いている様子を撮影してください</p>
+            <button onClick={toggleTorch}
+              className={`ml-3 shrink-0 p-2.5 rounded-full transition-colors ${torchEnabled ? 'bg-yellow-400 text-black' : 'bg-white/20 text-white'}`}>
+              {torchEnabled ? <Zap className="h-5 w-5" /> : <ZapOff className="h-5 w-5" />}
+            </button>
+          </div>
           <button onClick={() => {
             const dataUrl = capturePhoto()
             setSelfiePreview(dataUrl); setSelfieBase64(dataUrl.split(',')[1])
@@ -218,7 +239,13 @@ export default function AlcoholCheckPage() {
       <div className="fixed inset-0 z-[100] bg-black flex flex-col" style={{ height: '100dvh' }}>
         <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover min-h-0" />
         <div className="shrink-0 bg-black px-6 pt-4 flex flex-col items-center gap-3" style={{ paddingBottom: SAFE_BOTTOM }}>
-          <p className="text-white text-sm text-center">アルコールチェッカーの数値表示を撮影してください</p>
+          <div className="w-full flex items-center justify-between">
+            <p className="text-white text-sm flex-1 text-center">アルコールチェッカーの数値表示を撮影してください</p>
+            <button onClick={toggleTorch}
+              className={`ml-3 shrink-0 p-2.5 rounded-full transition-colors ${torchEnabled ? 'bg-yellow-400 text-black' : 'bg-white/20 text-white'}`}>
+              {torchEnabled ? <Zap className="h-5 w-5" /> : <ZapOff className="h-5 w-5" />}
+            </button>
+          </div>
           <button onClick={() => {
             const dataUrl = capturePhoto()
             setDevicePreview(dataUrl); setDeviceBase64(dataUrl.split(',')[1])

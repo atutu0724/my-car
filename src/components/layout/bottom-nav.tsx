@@ -36,11 +36,11 @@ export function BottomNav({ role }: { role: UserRole }) {
             key={href}
             href={href}
             className={cn(
-              'flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium transition-colors',
+              'flex-1 flex flex-col items-center justify-center py-3 gap-1 text-[11px] font-medium transition-colors',
               active ? 'text-blue-600' : 'text-gray-400'
             )}
           >
-            <Icon className={cn('h-5 w-5', active ? 'text-blue-600' : 'text-gray-400')} />
+            <Icon className={cn('h-6 w-6', active ? 'text-blue-600' : 'text-gray-400')} />
             {label}
           </Link>
         )
